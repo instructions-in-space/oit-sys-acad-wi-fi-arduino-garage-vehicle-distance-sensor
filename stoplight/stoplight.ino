@@ -13,6 +13,11 @@
   // Create a server to listen on port 80
   WiFiServer server(80);
 
+  // Starting IP address (you can tweak these values based on your network's configuration)
+  String baseIP = "192.168.204.";  // The subnet of your network
+  int startRange = 2;   // Starting IP address range (Usually 192.168.1.2 onwards)
+  int endRange = 255;   // Ending IP address range (You can limit this for faster scanning)
+
 	void setup() {
      // Setup serial port
     Serial.begin(115200);
@@ -20,6 +25,17 @@
 
     // Begin Wi-Fi 
     WiFi.begin(WIFI_SSID,WIFI_PASS);
+    // I may not want this section after all, but I'll keep it here for now.
+    while (WiFi.status() != WL_CONNECTED) {
+      delay(1000);
+      Serial.println("Connecting to WiFi...");
+    }
+    Serial.println("Connected to WiFi");
+    Serial.print("IP Address: ");
+    Serial.println(WiFi.localIP());  // Print the IP address assigned by DHCP
+
+    // Start scanning local network
+    scanNetwork();
 
     // Start the server
     server.begin();
@@ -29,6 +45,52 @@
 	  pinMode(yellowLED, OUTPUT);
 	  pinMode(greenLED, OUTPUT);
 	}
+
+  void scanNetwork() {
+    // Try GET request to each IP in the local subnet
+    for (int i = startRange; i <= endRange; i++) {
+      String ip = baseIP + String(i);
+      sendGETRequest(ip);
+      delay(500);  // Add delay to avoid flooding the network
+    }
+  }
+
+  void sendGETRequest(String ip) {
+    String url = "http://" + ip + "/request";  // Customize this URL based on your device's expected endpoint
+  
+  // Set up HTTP Client
+  HTTPClient http;
+  begin(WiFiClient, url);
+  int httpCode = http.GET();
+  
+  // Check if the HTTP request was successful
+  if (httpCode > 0) {
+    Serial.print("HTTP GET request to ");
+    Serial.print(ip);
+    Serial.print(" successful. Response code: ");
+    Serial.println(httpCode);
+
+    String payload = http.getString();
+    Serial.print("Response: ");
+    Serial.println(payload);
+    
+    // You can add custom logic to identify the correct device based on the response payload
+    if (payload.indexOf("YourUniqueDeviceIdentifier") >= 0) {
+      Serial.println("Target device found!");
+    }
+  } else {
+    Serial.print("HTTP GET request failed for ");
+    Serial.print(ip);
+    Serial.print(". Error code: ");
+    Serial.println(httpCode);
+  }
+
+  http.end();
+}
+
+
+
+
 
 	void loop() {
     WiFiClient client = server.available();  // Listen for incoming clients
