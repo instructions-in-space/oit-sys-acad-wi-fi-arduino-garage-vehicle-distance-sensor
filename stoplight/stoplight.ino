@@ -22,10 +22,15 @@ void setup() {
 
 void loop() {
     if (targetIP != "") {
-        sendMessage(targetIP, "Hello from Client!");
+        //Serial.println("test");
+        receiveMessage(targetIP, "Open_for_message");
+
+
+        
     }
-    delay(5000);
+    delay(1000);
 }
+
 
 void findOtherDevice() {
     HTTPClient http;
@@ -35,6 +40,8 @@ void findOtherDevice() {
         
         if (sendMessage(testIP, "redlight")) {
             Serial.println("Device found at: " + testIP);
+            sendMessage(targetIP, "Hello!");
+            Serial.println("This is the place.");
             targetIP = testIP;
             break;
         }
@@ -54,8 +61,34 @@ bool sendMessage(String ip, String message) {
         if (response == "greenlight") {
             return true;
         }
+        //if (response == "100") {
+        //  Serial.println("It is a one hundred!");
+        //}
     }
+    http.end();
+    return false;
+}
+
+bool receiveMessage(String ip, String message) {
+    HTTPClient http;
+    String url = "http://" + ip + "/message?data=" + message;
     
+    http.begin(client, url);
+    int httpCode = http.GET();
+    
+    if (httpCode > 0) {
+        String response = http.getString();
+        Serial.println("Response from " + ip + ": " + response);
+        if (response == "greenlight") {
+            return true;
+        }
+        if (response == "100") {
+          Serial.println("It is a one hundred!");
+        }
+        if (response == "150") {
+          Serial.println("It is 150!");
+        }
+    }
     http.end();
     return false;
 }
