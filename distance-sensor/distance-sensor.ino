@@ -56,7 +56,7 @@ void loop() {
     Serial.print(" in."); 
     Serial.println(); // I added this.
 
-    server.send(200, "text/plain", "green");
+    //server.send(200, "text/plain", "green");
 
     //Serial.print("Calculated inches:  "); // I added this.
     //Serial.println (inches); // I added this.
@@ -67,7 +67,8 @@ void loop() {
     //Serial.print(duration*0.0343/2);   // Calculate the distance in cm (34,300 cm/s)  // Original; keep this.
     //Serial.print("cm]\n");  // Original; keep this.
 
-    delay(1000);                // Loop every 1 second
+    //delay(1000);                // Loop every 1 second
+    delay(10);                // Loop very quickly
     // - - - - - - - - - - - - - - - - (End)
 }
 

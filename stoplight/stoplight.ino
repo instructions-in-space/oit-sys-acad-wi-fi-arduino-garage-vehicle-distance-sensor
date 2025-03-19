@@ -10,11 +10,6 @@
 
 WiFiClient client;
 String targetIP = "";
-
-// - - - - - - - - - - - - - - - - (Begin)
-// LED Control Code
-// - - - - - - - - - - - - - - - - (End)
-
 // - - - - - - - - - - - - - - - - (Begin)
 // LED Control Code
 // Define pins for LEDs
@@ -22,7 +17,6 @@ String targetIP = "";
     const int yellowLED = 14;
     const int greenLED = 12;
 // - - - - - - - - - - - - - - - - (End)
-
 
 void setup() {
     Serial.begin(115200);
@@ -46,33 +40,58 @@ void setup() {
 
 void loop() {
     if (targetIP != "") {
-        //Serial.println("test");
-        receiveMessage(targetIP, "Open_for_message");
-
-
-
-
-
-
-
-
+        String message = "test";  
+        HTTPClient http;
+        String url = "http://" + targetIP + "/message?data=" + message;  
+        http.begin(client, url);  
+        int httpCode = http.GET();
+        if (httpCode > 0) {
+            String response = http.getString();
+            Serial.println("Response from " + targetIP + ": " + response);
+            if (response == "green") {
+                digitalWrite(redLED, LOW);
+                digitalWrite(yellowLED, LOW);
+                digitalWrite(greenLED, HIGH);
+            }
+            if (response == "yellow") {
+                digitalWrite(redLED, LOW);
+                digitalWrite(yellowLED, HIGH);
+                digitalWrite(greenLED, LOW);
+            }
+            if (response == "red") {
+                digitalWrite(redLED, HIGH);
+                digitalWrite(yellowLED, LOW);
+               digitalWrite(greenLED, LOW);
+            }
+            if (response == "") {  // (No response from the "distance sensor" Arduino.)
+              digitalWrite(redLED, HIGH);    // Blinks the red LED on and then turns it off  
+              digitalWrite(yellowLED, LOW);  // to show that the "stoplight" Arduino didn't 
+              digitalWrite(greenLED, LOW);   // receive a response from the "distance sensor"
+              delay(1000);                   // one.
+              digitalWrite(redLED, LOW);   
+            }
+        }
+        http.end();
     }
-    //delay(1000);
     delay(1);
 }
 
 void findOtherDevice() {
     HTTPClient http;
-    for (int i = 1; i < 255; i++) {
+    for (int i = 1; i < 255; i++) {    // Middle value should be "255".
         String testIP = "192.168.204." + String(i);
         Serial.println("Checking: " + testIP);
-        
+        digitalWrite(redLED, HIGH);  // Blinks the red LED on and off to indicate
+        delay(500);                  // that the "stoplight" Arduino is looking
+        digitalWrite(redLED, LOW);   // for the "distance sensor" one.
         if (sendMessage(testIP, "redlight")) {
             Serial.println("Device found at: " + testIP);
             sendMessage(targetIP, "Hello!");
-            Serial.println("This is the place.");
             targetIP = testIP;
             break;
+        }
+        if (i == 254) {                     // The solid yellow LED indicates that the "stoplight" 
+          digitalWrite(yellowLED, HIGH);  // Arduino was unable to find the "distance sensor" one.
         }
     }
 }
@@ -92,42 +111,4 @@ bool sendMessage(String ip, String message) {
     http.end();
     return false;
 }
-
-bool receiveMessage(String ip, String message) {
-    HTTPClient http;
-    String url = "http://" + ip + "/message?data=" + message;
-    http.begin(client, url);
-    int httpCode = http.GET();
-    if (httpCode > 0) {
-        String response = http.getString();
-        Serial.println("Response from " + ip + ": " + response);
-        if (response == "greenlight") {
-            return true;
-        }
-        if (response == "green") {
-            digitalWrite(redLED, LOW);
-            digitalWrite(yellowLED, LOW);
-            digitalWrite(greenLED, HIGH);
-          Serial.println("Go green!");
-        }
-        if (response == "yellow") {
-            digitalWrite(redLED, LOW);
-            digitalWrite(yellowLED, HIGH);
-            digitalWrite(greenLED, LOW);
-          Serial.println("Yell yellow!");
-        }
-        if (response == "red") {
-            digitalWrite(redLED, HIGH);
-            digitalWrite(yellowLED, LOW);
-            digitalWrite(greenLED, LOW);
-          Serial.println("Run red!");
-        }
-
-
-
-    }
-    http.end();
-    return false;
-}
-
 
