@@ -10,11 +10,6 @@
 long duration;                  // variable for the duration of sound wave travel
 // - - - - - - - - - - - - - - - - (End)
 
-// - - - - - - - - - - - - - - - - (Begin)
-// Distance Sensor Code
-// - - - - - - - - - - - - - - - - (End)
-
-
 ESP8266WebServer server(80);
 
 void setup() {
@@ -55,20 +50,7 @@ void loop() {
     inches = duration*0.013504/2;
     Serial.print(" in."); 
     Serial.println(); // I added this.
-
-    //server.send(200, "text/plain", "green");
-
-    //Serial.print("Calculated inches:  "); // I added this.
-    //Serial.println (inches); // I added this.
-    //if (inches > 5) { // I added this.
-    //    Serial.println("Green is for Go!"); // I added this.
-    //} // I added this.
-    //Serial.print("in. [");  // Original; keep this.
-    //Serial.print(duration*0.0343/2);   // Calculate the distance in cm (34,300 cm/s)  // Original; keep this.
-    //Serial.print("cm]\n");  // Original; keep this.
-
-    //delay(1000);                // Loop every 1 second
-    delay(10);                // Loop very quickly
+    delay(300);                // Loop very quickly
     // - - - - - - - - - - - - - - - - (End)
 }
 
@@ -81,23 +63,26 @@ void handleMessage() {
             server.send(200, "text/plain", "greenlight");
         }
         // This is the area for sending the state.  
-        // Green
-        if (inches > 10) { 
-            Serial.println("Green is for Go!"); 
+        // Green (go)
+        if (inches > 20) { 
+            //Serial.println("Green is for Go!"); 
             server.send(200, "text/plain", "green");
         } 
-        // Yellow 
-        if (inches < 10 && inches > 5) { 
-            Serial.println("Yellow is for Yell!"); 
+        // Yellow (warning)
+        if (inches < 20 && inches > 10) { 
+            //Serial.println("Yellow is for Yell!"); 
             server.send(200, "text/plain", "yellow");
         } 
-        // Red 
-        if (inches < 5) { 
-            Serial.println("Red is for Run!"); 
+        // Red (stop)
+        if (inches < 10 && inches > 5) { 
+            //Serial.println("Red is for Run!"); 
             server.send(200, "text/plain", "red");
         } 
-
-
+        // Too far, back up (fast flashing red)
+        if (inches < 5) { 
+            //Serial.println("Red is for Run!"); 
+            server.send(200, "text/plain", "flashingred");
+        }
     } else {
         server.send(400, "text/plain", "No message received");
     }
@@ -112,7 +97,4 @@ void handleMessage() {
 // Vcc | Trig | Echo | Gnd
 // From back:
 // Gnd | Echo | Trig | Vcc
-
-
-
 

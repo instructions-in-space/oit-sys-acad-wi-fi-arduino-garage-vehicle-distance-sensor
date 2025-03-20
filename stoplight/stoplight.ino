@@ -61,7 +61,14 @@ void loop() {
             if (response == "red") {
                 digitalWrite(redLED, HIGH);
                 digitalWrite(yellowLED, LOW);
-               digitalWrite(greenLED, LOW);
+                digitalWrite(greenLED, LOW);
+            }
+            if (response == "flashingred") {  // This one is to have the red light flash if the
+                digitalWrite(redLED, HIGH);   // car is too close and needs to back up.
+                digitalWrite(yellowLED, LOW);
+                digitalWrite(greenLED, LOW);
+                delay(500);
+                digitalWrite(redLED, LOW);
             }
             if (response == "") {  // (No response from the "distance sensor" Arduino.)
               digitalWrite(redLED, HIGH);    // Blinks the red LED on and then turns it off  
@@ -73,7 +80,7 @@ void loop() {
         }
         http.end();
     }
-    delay(1);
+    delay(5);
 }
 
 void findOtherDevice() {
